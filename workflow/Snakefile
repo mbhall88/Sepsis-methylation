@@ -1,0 +1,24 @@
+from pathlib import Path
+import pandas as pd
+from typing import Dict, Set
+
+
+# =====================================
+# Workflow config items
+configfile: "config/config.yaml"
+
+
+containers: Dict[str, str] = config["containers"]
+workflow_dir = Path("workflow").resolve()
+scripts_dir = workflow_dir / "scripts"
+rules_dir = workflow_dir / "rules"
+envs_dir = workflow_dir / "env"
+logs_dir = Path("logs/rules").resolve()
+transcriptome_ref = Path(config["transcriptome_ref"]).resolve()
+# =====================================
+targets: Set[Path] = set()
+
+
+rule all:
+    input:
+        targets,

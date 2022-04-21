@@ -1,0 +1,9 @@
+transcriptome_ref: "data/reference/blood.fa"
+
+containers:
+  nanocompore: "library://aleg/default/nanocompore:1.0.3"
+  metacompore_python: "library://aleg/default/metacompore_python:3.8.6"
+  f5c: "docker://quay.io/mbhall88/f5c-gpu:0.6"
+  pybiotools: "library://aleg/default/pybiotools:0.2.7"
+  guppy: "docker://quay.io/mbhall88/guppy-gpu:5.0.16"
+  xpore: "docker://quay.io/biocontainers/xpore:2.1--pyh5e36f6f_0"
