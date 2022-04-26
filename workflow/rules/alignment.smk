@@ -1,21 +1,5 @@
 
-rule index_transcriptome:
-    input:
-        fasta=transcriptome_ref,
-    output:
-        fasta=join("results", module_name, rule_name, "transcriptome_reference.fa"),
-        fai=join("results", module_name, rule_name, "transcriptome_reference.fa.fai"),
-    log:
-        join("logs", module_name, rule_name, "transcriptome_reference.log"),
-    threads: get_threads(config, rule_name)
-    params:
-        opt=get_opt(config, rule_name),
-    resources:
-        mem_mb=get_mem(config, rule_name),
-    container:
-        containers["metacompore_python"]
-    script:
-        str(scripts_dir / "index_transcriptome.py")
+
 
 
 rule minimap2_index:
