@@ -1,40 +1,45 @@
 rule basecall:
     input:
-        fast5_dir=get_fast5,
+        fast5_dir=fast5_dir / "{sample}/",
     output:
-        seqsum=join(
-            "results", module_name, rule_name, "{cond}_{rep}", "sequencing_summary.txt"
+        summary=(
+            data_dir
+            / f"basecalls/guppy_v{GUPPY_VERSION}/{{sample}}/sequencing_summary.txt"
         ),
-        fastq_dir=directory(join("results", module_name, rule_name, "{cond}_{rep}")),
+        save_path=directory(data_dir / f"basecalls/guppy_v{GUPPY_VERSION}/{{sample}}/"),
     log:
-        join("logs", module_name, rule_name, "{cond}_{rep}.log"),
-    threads: get_threads(config, rule_name)
+        logs_dir / "basecall/{sample}.log",
+    threads: 2
     params:
-        opt=get_opt(config, rule_name),
+        opt=" ".join(
+            [
+                "-c rna_r9.4.1_70bps_hac.cfg",
+                "--recursive",
+                "--disable_pings",
+                "--calib_detect",
+                "--num_callers 8",
+                "--gpu_runners_per_device 1",
+                "--device cuda:all:100%",
+            ]
+        ),
     resources:
-        mem_mb=get_mem(config, rule_name),
+        mem_mb=6 * GB,
     container:
         containers["guppy"]
     shell:
-        "guppy_basecaller {params.opt} -i {input.fast5_dir} -s {output.fastq_dir} &> {log}"
-
-
-rule_name = "merge_fastq"
+        "guppy_basecaller {params.opt} -i {input.fast5_dir} -s {output.save_path} &> {log}"
 
 
 rule merge_fastq:
     input:
-        fastq_dir=rules.ont_guppy.output.fastq_dir,
+        fastq_dir=rules.basecall.output.save_path,
     output:
-        fastq=join("results", module_name, rule_name, "{cond}_{rep}.fastq"),
+        fastq=data_dir / f"basecalls/guppy_v{GUPPY_VERSION}/{{sample}}.fq.gz",
     log:
-        join("logs", module_name, rule_name, "{cond}_{rep}.log"),
-    threads: get_threads(config, rule_name)
+        logs_dir / "merge_fastq/{sample}.log",
     params:
-        opt=get_opt(config, rule_name),
-    resources:
-        mem_mb=get_mem(config, rule_name),
+        opt="--remove_duplicates --min_len 100 --min_qual 7 -v",
     container:
         containers["pybiotools"]
     shell:
-        "pyBioTools Fastq Filter {params.opt} -i {input.fastq_dir} -o {output.fastq} --verbose &> {log}"
+        "pyBioTools Fastq Filter {params.opt} -i {input.fastq_dir} -o {output.fastq} &> {log}"

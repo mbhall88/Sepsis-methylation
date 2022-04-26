@@ -9,6 +9,7 @@ configfile: "config/config.yaml"
 
 
 GB = 1_024
+GUPPY_VERSION = containers["guppy"].split(":")[-1]
 containers: Dict[str, str] = config["containers"]
 workflow_dir = Path("workflow").resolve()
 scripts_dir = workflow_dir / "scripts"
@@ -17,9 +18,11 @@ envs_dir = workflow_dir / "env"
 logs_dir = Path("logs/rules").resolve()
 data_dir = Path("data").resolve()
 results = Path("results").resolve()
+fast5_dir = Path(config["fast5_dir"]).resolve()
 transcriptome_url = Path(config["transcriptome_ref"]).resolve()
 # =====================================
 targets: Set[Path] = set()
+
 
 
 rule all:

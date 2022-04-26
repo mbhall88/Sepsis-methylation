@@ -4,7 +4,7 @@ rule download_transcriptome:
     container:
         containers["base"]
     log:
-        log_dir / "download_transcriptome.log"
+        logs_dir / "download_transcriptome.log"
     params:
         url=transcriptome_url
     shell:
@@ -17,7 +17,7 @@ rule index_transcriptome:
         fasta=data_dir / "reference/transcriptome_reference.fa",
         fai=data_dir / "reference/transcriptome_reference.fa.fai",
     log:
-        log_dir / "index_transcriptome.log"
+        logs_dir / "index_transcriptome.log"
     resources:
         mem_mb=lambda wildcards, attempt: attempt * 2 * GB,
     container:

@@ -1,4 +1,5 @@
 transcriptome_url: "https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/GRCh38_latest_rna.fna.gz"
+fast5_dir: "/data/scratch/projects/punim1068/data/Q1128_dRNA_sepsis"
 
 containers:
   nanocompore: "library://aleg/default/nanocompore:1.0.3"
