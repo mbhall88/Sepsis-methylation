@@ -4,10 +4,13 @@ rule f5c_index:
         fast5_dir=fast5_dir / "{sample}/",
         fastq=rules.merge_fastq.output.fastq,
     output:
-        index=rules.merge_fastq.output.fastq + ".index",
-        index_fai=rules.merge_fastq.output.fastq + ".index.fai",
-        index_gzi=rules.merge_fastq.output.fastq + ".index.gzi",
-        index_readdb=rules.merge_fastq.output.fastq + ".index.readdb",
+        indices=multiext(
+            rules.merge_fastq.output.fastq,
+            ".index",
+            ".index.fai",
+            ".index.gzi",
+            ".index.readdb",
+        ),
     log:
         logs_dir / "f5c_index/{sample}.log",
     threads: 4
@@ -22,7 +25,7 @@ rule f5c_index:
 rule f5c_eventalign:
     input:
         fastq=rules.merge_fastq.output.fastq,
-        index=rules.f5c_index.output.index,
+        index=rules.f5c_index.output.indices,
         bam=rules.alignmemt_postfilter.output.bam,
         fasta=rules.index_transcriptome.output.fasta,
         kmer_model="resources/f5c/r9.4_70bps.u_to_t_rna.5mer.template.model",
