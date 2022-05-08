@@ -42,4 +42,4 @@ rule merge_fastq:
     container:
         containers["pybiotools"]
     shell:
-        "pyBioTools Fastq Filter {params.opt} -i {input.fastq_dir} -o {output.fastq} &> {log}"
+        "pyBioTools Fastq Filter {params.opt} -i {input.fastq_dir}/pass -o {output.fastq} &> {log}"
