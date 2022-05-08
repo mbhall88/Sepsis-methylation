@@ -55,18 +55,28 @@ rule nanocompore_sampcomp:
         ),
         fasta=rules.index_transcriptome.output.fasta,
     output:
-        res_tsv=join("results", module_name, rule_name, "outnanocompore_results.tsv"),
-        shift_tsv=join(
-            "results", module_name, rule_name, "outnanocompore_shift_stats.tsv"
-        ),
-        res_db=join("results", module_name, rule_name, "outSampComp.db"),
+        res_tsv=results / "nanocompore/{sample}/outnanocompore_results.tsv",
+        shift_tsv=results / "nanocompore/{sample}/outnanocompore_shift_stats.tsv",
+        res_db=results / "nanocompore/{sample}/outSampComp.db"),
     log:
-        join("logs", module_name, rule_name, "sampcomp.log"),
+        logs_dir / "nanocompore_sampcomp/{sample}.log",
     threads: get_threads(config, rule_name)
     params:
-        opt=get_opt(config, rule_name),
-    # resources:
-    #     mem_mb=lambda wildcards, attempt, mem=get_mem(config, rule_name): attempt * mem,
+        opt=" ".join(
+            [
+                "--max_invalid_kmers_freq 0.2 ",
+                "--min_coverage 30 ",
+                "--downsample_high_coverage 5000 ",
+                "--min_ref_length 100 ",
+                "--comparison_methods GMM,KS ",
+                "--sequence_context 2 ",
+                "--sequence_context_weights harmonic ",
+                "--pvalue_thr 0.01 ",
+                "--logit",
+            ]
+        ),
+    resources:
+        mem_mb=lambda wildcards, attempt: attempt * GB,
     container:
         containers["nanocompore"]
     script:

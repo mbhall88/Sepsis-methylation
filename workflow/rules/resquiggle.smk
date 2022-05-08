@@ -1,7 +1,7 @@
 
 rule f5c_index:
     input:
-        fast5_dir=get_fast5,
+        fast5_dir=fast5_dir / "{sample}/",
         fastq=rules.merge_fastq.output.fastq,
     output:
         index=rules.merge_fastq.output.fastq + ".index",
@@ -9,17 +9,14 @@ rule f5c_index:
         index_gzi=rules.merge_fastq.output.fastq + ".index.gzi",
         index_readdb=rules.merge_fastq.output.fastq + ".index.readdb",
     log:
-        join("logs", module_name, rule_name, "{cond}_{rep}.log"),
-    threads: get_threads(config, rule_name)
+        logs_dir / "f5c_index/{sample}.log",
+    threads: 4
     params:
-        opt=get_opt(config, rule_name),
-    resources:
-        mem_mb=get_mem(config, rule_name),
+        opt="--iop 4",
     container:
         containers["f5c"]
     shell:
         "f5c index {params.opt} -t {threads} -d {input.fast5_dir} {input.fastq} 2> {log}"
-
 
 
 rule f5c_eventalign:
@@ -30,16 +27,20 @@ rule f5c_eventalign:
         fasta=rules.index_transcriptome.output.fasta,
         kmer_model="resources/f5c/r9.4_70bps.u_to_t_rna.5mer.template.model",
     output:
-        tsv=join("results", module_name, rule_name, "{cond}_{rep}_data.tsv"),
-        summary=join("results", module_name, rule_name, "{cond}_{rep}_summary.tsv"),
+        tsv=results / "eventalign/{sample}_data.tsv",
+        summary=results / "eventalign/{sample}_summary.tsv",
     log:
-        join("logs", module_name, rule_name, "{cond}_{rep}.log"),
-    threads: get_threads(config, rule_name)
+        logs_dir / "f5c_eventalign/{sample}.log",
+    threads: 8
     params:
-        opt=get_opt(config, rule_name),
+        opt="-x desktop-high --rna --samples --signal-index --print-read-names --scale-events --verbose 2",
     resources:
-        mem_mb=lambda wildcards, attempt, mem=get_mem(config, rule_name): attempt * mem,
+        mem_mb=lambda wildcards, attempt: attempt * 8 * GB,
     container:
         containers["f5c"]
     shell:
-        "f5c eventalign {params.opt} -t {threads} --kmer-model {input.kmer_model} -r {input.fastq} -b {input.bam} -g {input.fasta} --summary {output.summary}  > {output.tsv} 2> {log}"
+        """
+        f5c eventalign {params.opt} -t {threads} --kmer-model {input.kmer_model} \
+            -r {input.fastq} -b {input.bam} -g {input.fasta} --summary {output.summary} \
+            > {output.tsv} 2> {log}
+        """
