@@ -1,66 +1,43 @@
+from pathlib import Path
+
 
 rule nanocompore_eventalign_collapse:
     input:
         tsv=rules.f5c_eventalign.output.tsv,
     output:
-        outdir=directory(join("results", module_name, rule_name, "{cond}_{rep}")),
-        tsv=join(
-            "results",
-            module_name,
-            rule_name,
-            "{cond}_{rep}",
-            "out_eventalign_collapse.tsv",
-        ),
-        idx=join(
-            "results",
-            module_name,
-            rule_name,
-            "{cond}_{rep}",
-            "out_eventalign_collapse.tsv.idx",
-        ),
+        tsv=results / "nanocompore/{sample}/out_eventalign_collapse.tsv",
+        idx=results / "nanocompore/{sample}/out_eventalign_collapse.tsv.idx",
     log:
-        join("logs", module_name, rule_name, "{cond}_{rep}.log"),
-    threads: get_threads(config, rule_name)
+        logs_dir / "nanocompore_eventalign_collapse/{sample}.log",
+    threads: 4
     params:
-        opt=get_opt(config, rule_name),
-    # resources:
-    #     mem_mb=lambda wildcards, attempt, mem=get_mem(config, rule_name): attempt * mem,
+        opt="",
+        outdir=lambda wildcards, output: Path(output.tsv).parent,
+    resources:
+        mem_mb=lambda wildcards, attempt: attempt * 4 * GB,
     container:
         containers["nanocompore"]
     shell:
-        "nanocompore eventalign_collapse -t {threads} {params.opt} --overwrite -i {input.tsv} -o {output.outdir} &> {log}"
+        """
+        nanocompore eventalign_collapse -t {threads} {params.opt} --overwrite \
+            -i {input.tsv} -o {params.outdir} &> {log}
+        """
 
 
 rule nanocompore_sampcomp:
     input:
-        control_tsv=expand(
-            join(
-                "results",
-                module_name,
-                "nanocompore_eventalign_collapse",
-                "control_{rep}",
-                "out_eventalign_collapse.tsv",
-            ),
-            rep=replicates_list,
-        ),
-        test_tsv=expand(
-            join(
-                "results",
-                module_name,
-                "nanocompore_eventalign_collapse",
-                "test_{rep}",
-                "out_eventalign_collapse.tsv",
-            ),
-            rep=replicates_list,
-        ),
+        control_tsv=results / f"nanocompore/{CTRL}/out_eventalign_collapse.tsv",
+        test_tsv=rules.nanocompore_eventalign_collapse.output.tsv,
         fasta=rules.index_transcriptome.output.fasta,
     output:
         res_tsv=results / "nanocompore/{sample}/outnanocompore_results.tsv",
         shift_tsv=results / "nanocompore/{sample}/outnanocompore_shift_stats.tsv",
-        res_db=results / "nanocompore/{sample}/outSampComp.db"),
+        res_db=results / "nanocompore/{sample}/outSampComp.db",
+    wildcard_constraints:
+        sample=rf"^(?!{CTRL})$",  # dont use control sample in {sample} wildcard
     log:
         logs_dir / "nanocompore_sampcomp/{sample}.log",
-    threads: get_threads(config, rule_name)
+    threads: 4
     params:
         opt=" ".join(
             [
@@ -76,7 +53,7 @@ rule nanocompore_sampcomp:
             ]
         ),
     resources:
-        mem_mb=lambda wildcards, attempt: attempt * GB,
+        mem_mb=lambda wildcards, attempt: attempt * 4 * GB,
     container:
         containers["nanocompore"]
     script:

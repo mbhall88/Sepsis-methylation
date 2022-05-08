@@ -9,8 +9,9 @@ configfile: "config/config.yaml"
 
 
 GB = 1_024
-GUPPY_VERSION = containers["guppy"].split(":")[-1]
+CTRL = ""#todo get control sample name from samplesheet
 containers: Dict[str, str] = config["containers"]
+GUPPY_VERSION = containers["guppy"].split(":")[-1]
 workflow_dir = Path("workflow").resolve()
 scripts_dir = workflow_dir / "scripts"
 rules_dir = workflow_dir / "rules"
