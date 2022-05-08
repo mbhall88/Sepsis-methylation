@@ -10,6 +10,7 @@ configfile: "config/config.yaml"
 
 GB = 1_024
 CTRL = ""#todo get control sample name from samplesheet
+TESTS = ""#todo get test sample names into list
 containers: Dict[str, str] = config["containers"]
 GUPPY_VERSION = containers["guppy"].split(":")[-1]
 workflow_dir = Path("workflow").resolve()

@@ -1,19 +1,17 @@
-
-
+aln_dir = results / "alignment"
 
 
 rule minimap2_index:
     input:
         fasta=rules.index_transcriptome.output.fasta,
     output:
-        idx=join("results", module_name, rule_name, "transcriptome_reference.mmi"),
+        idx=data_dir / "reference/transcriptome_reference.mmi",
     log:
-        join("logs", module_name, rule_name, "name.log"),
-    threads: get_threads(config, rule_name)
+        logs_dir / "minimap2_index.log",
     params:
-        opt=get_opt(config, rule_name),
+        opt="-x map-ont",
     resources:
-        mem_mb=get_mem(config, rule_name),
+        mem_mb=lambda wildcards, attempt: attempt * 2 * GB,
     conda:
         str(envs_dir / "aln_tools.yaml")
     shell:
@@ -25,24 +23,26 @@ rule minimap2_align:
         idx=rules.minimap2_index.output.idx,
         fastq=rules.merge_fastq.output.fastq,
     output:
-        bam=temp(join("results", module_name, rule_name, "{cond}_{rep}.bam")),
-        bam_index=temp(join("results", module_name, rule_name, "{cond}_{rep}.bam.bai")),
+        bam=temp(aln_dir / "{sample}.bam"),
+        bam_index=temp(aln_dir / "{sample}.bam.bai"),
     log:
-        join("logs", module_name, rule_name, "{cond}_{rep}.log"),
-    threads: get_threads(config, rule_name)
-    params:
-        opt=get_opt(config, rule_name),
+        logs_dir / "minimap2_align/{sample}.log",
+    threads: 4
     resources:
-        mem_mb=get_mem(config, rule_name),
+        mem_mb=lambda wildcards, attempt: attempt * 4 * GB,
+    params:
+        opt="-aL -x map-ont",
     conda:
         str(envs_dir / "aln_tools.yaml")
     shell:
         """
-        minimap2 -t {threads} {params.opt} {input.idx} {input.fastq} 2> {log} | \
-        samtools view -bh 2>> {log} | \
-        samtools sort > {output.bam} 2>> {log} \
-        && samtools index {output.bam} 2>> {log}
+        (minimap2 -t {threads} {params.opt} {input.idx} {input.fastq} | \
+            samtools sort -@ {threads} -o {output.bam}) 2> {log}
+        samtools index {output.bam} 2>> {log}
         """
+
+
+prefilter_dir = aln_dir / "prefilter"
 
 
 rule alignmemt_prefilter:
@@ -50,18 +50,25 @@ rule alignmemt_prefilter:
         bam=rules.minimap2_align.output.bam,
         bam_index=rules.minimap2_align.output.bam_index,
     output:
-        bam=temp(join("results", module_name, rule_name, "{cond}_{rep}.bam")),
-        bam_index=temp(join("results", module_name, rule_name, "{cond}_{rep}.bam.bai")),
-        reads_index=temp(
-            join("results", module_name, rule_name, "{cond}_{rep}.bam.idx.gz")
-        ),
+        bam=temp(prefilter_dir / "{sample}.bam"),
+        bam_index=temp(prefilter_dir / "{sample}.bam.bai"),
+        reads_index=temp(prefilter_dir / "{sample}.bam.idx.gz"),
     log:
-        join("logs", module_name, rule_name, "{cond}_{rep}.log"),
-    threads: get_threads(config, rule_name)
+        logs_dir / "alignment_prefilter/{sample}.log",
     params:
-        opt=get_opt(config, rule_name),
-    resources:
-        mem_mb=get_mem(config, rule_name),
+        opt=" ".join(
+            [
+                "--skip_unmapped",
+                "--skip_secondary",
+                "--skip_supplementary",
+                "--index_reads",
+                "--orientation '+'",
+                "--min_read_len 100",
+                "--min_align_len 100",
+                "--min_mapq 10",
+                "--min_freq_identity 0.8",
+            ]
+        ),
     container:
         containers["pybiotools"]
     shell:
@@ -71,28 +78,22 @@ rule alignmemt_prefilter:
 rule min_ref_coverage:
     input:
         reads_index_list=expand(
-            join(
-                "results",
-                module_name,
-                "alignmemt_prefilter",
-                "{cond}_{rep}.bam.idx.gz",
-            ),
-            cond=condition_list,
-            rep=replicates_list,
+            prefilter_dir / "{sample}.bam.idx.gz",
+            sample=TESTS,
         ),
     output:
-        ref_list=join("results", module_name, rule_name, "valid_references_list.txt"),
+        ref_list=aln_dir / "valid_references_list.txt",
     log:
-        join("logs", module_name, rule_name, "out.log"),
-    threads: get_threads(config, rule_name)
+        logs_dir / "min_ref_coverage.log",
     params:
-        opt=get_opt(config, rule_name),
-    resources:
-        mem_mb=get_mem(config, rule_name),
+        opt=dict(min_cov=30),
     container:
         containers["metacompore_python"]
     script:
-        "../scripts/min_ref_coverage.py"
+        str(scripts_dir / "min_ref_coverage.py")
+
+
+postfilter_dir = aln_dir / "postfilter"
 
 
 rule alignmemt_postfilter:
@@ -101,19 +102,16 @@ rule alignmemt_postfilter:
         bam_index=rules.alignmemt_prefilter.output.bam_index,
         ref_list=rules.min_ref_coverage.output.ref_list,
     output:
-        bam=join("results", module_name, rule_name, "{cond}_{rep}.bam"),
-        bam_index=join("results", module_name, rule_name, "{cond}_{rep}.bam.bai"),
-        reads_index=join("results", module_name, rule_name, "{cond}_{rep}.bam.idx.gz"),
-        selected_reads_fn=join(
-            "results", module_name, rule_name, "{cond}_{rep}_selected_read_ids.txt"
-        ),
+        bam=postfilter_dir / "{sample}.bam",
+        bam_index=postfilter_dir / "{sample}.bam.bai",
+        reads_index=postfilter_dir / "{sample}.bam.idx.gz",
+        selected_reads_fn=postfilter_dir / "{sample}_selected_read_ids.txt",
     log:
-        join("logs", module_name, rule_name, "{cond}_{rep}.log"),
-    threads: get_threads(config, rule_name)
+        logs_dir / "alignment_postfilter/{sample}.log",
     params:
-        opt=get_opt(config, rule_name),
+        opt="--index_reads",
     resources:
-        mem_mb=get_mem(config, rule_name),
+        mem_mb=lambda wildcards, attempt: attempt * GB,
     container:
         containers["pybiotools"]
     shell:
