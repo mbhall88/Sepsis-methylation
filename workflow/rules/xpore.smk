@@ -1,29 +1,34 @@
-xpore_img = "docker://quay.io/biocontainers/xpore:2.1--pyh5e36f6f_0"
+from pathlib import Path
+
+xpore_dir = results / "xpore"
 
 
 # we have to do an extra eventalign because xpore needs read_index instead of read_name
 rule xpore_eventalign:
     input:
         fastq=rules.merge_fastq.output.fastq,
-        index=rules.f5c_index.output.index,
+        index=rules.f5c_index.output.indices,
         bam=rules.alignmemt_postfilter.output.bam,
         fasta=rules.index_transcriptome.output.fasta,
         kmer_model="resources/f5c/r9.4_70bps.u_to_t_rna.5mer.template.model",
     output:
-        tsv=join("results", module_name, rule_name, "{cond}_{rep}_data.tsv"),
-        summary=join("results", module_name, rule_name, "{cond}_{rep}_summary.tsv"),
+        tsv=xpore_dir / "eventalign/{sample}_data.tsv",
+        summary=xpore_dir / "eventalign/{sample}_summary.tsv",
     log:
-        join("logs", module_name, rule_name, "{cond}_{rep}.log"),
-    threads: get_threads(config, rule_name)
+        logs_dir / "xpore_eventalign/{sample}.log",
+    threads: 8
     params:
-        opt=get_opt(config, rule_name),
+        opt="-x desktop-high --rna --signal-index --scale-events --verbose 2",
     resources:
-        mem_mb=lambda wildcards, attempt, mem=get_mem(config, rule_name): attempt * mem,
+        mem_mb=lambda wildcards, attempt: attempt * 8 * GB,
     container:
-        f5c_container
+        containers["f5c"]
     shell:
-        "f5c eventalign {params.opt} -t {threads} --kmer-model {input.kmer_model} -r {input.fastq} -b {input.bam} -g {input.fasta} --summary {output.summary}  > {output.tsv} 2> {log}"
-
+        """
+        f5c eventalign {params.opt} -t {threads} --kmer-model {input.kmer_model} \
+            -r {input.fastq} -b {input.bam} -g {input.fasta} --summary {output.summary} \
+            > {output.tsv} 2> {log}
+        """
 
 
 rule xpore_dataprep:
@@ -31,23 +36,23 @@ rule xpore_dataprep:
         eventalign=rules.xpore_eventalign.output.tsv,
     output:
         data=multiext(
-            f"results/{module_name}/{rule_name}/{{cond}}_{{rep}}/data",
+            xpore_dir / "{sample}/data",
             ".index",
             ".json",
             ".log",
             ".readcount",
         ),
-        idx=join("results", module_name, rule_name, "{cond}_{rep}", "eventalign.index"),
+        idx=xpore_dir / "{sample}/eventalign.index",
     log:
-        join("logs", module_name, rule_name, "{cond}_{rep}.log"),
-    threads: get_threads(config, rule_name)
+        logs_dir / "xpore_dataprep/{sample}.log",
+    threads: 8
     params:
-        opt=get_opt(config, rule_name),
+        opt="--readcount_max 1000000",
         outdir=lambda wildcards, output: Path(output.idx).parent,
     resources:
-        mem_mb=lambda wildcards, attempt, mem=get_mem(config, rule_name): attempt * mem,
+        mem_mb=lambda wildcards, attempt: attempt * 8 * GB,
     container:
-        xpore_img
+        containers["xpore"]
     shell:
         """
         xpore dataprep {params.opt} --eventalign {input.eventalign} \
@@ -55,41 +60,43 @@ rule xpore_dataprep:
         """
 
 
+diffmod_dir = xpore_dir / "diffmod"
+
 
 rule xpore_config:
     input:
-        jsons=expand(
-            f"results/{module_name}/xpore_dataprep/{{cond}}_{{rep}}/data.json",
-            cond=condition_list,
-            rep=replicates_list,
-        ),
+        control_json=xpore_dir / f"dataprep/{CTRL}/data.json",
+        test_json=xpore_dir / "dataprep/{sample}/data.json",
     output:
-        configuration=join("results", module_name, rule_name, "config.yaml"),
+        configuration=xpore_dir / "{sample}.config.yaml",
+    wildcard_constraints:
+        sample=rf"^(?!{CTRL})$",  # dont use control sample in {sample} wildcard
     params:
-        readcount_min=config[rule_name]["readcount_min"],
-        readcount_max=config[rule_name]["readcount_max"],
-        outdir=lambda wildcards, output: Path(output.configuration).parent.parent
-        / "xpore_diffmod",
+        readcount_min=15,
+        readcount_max=1_000,
+        outdir=lambda wildcards: diffmod_dir / wildcards.sample,
     log:
-        join("logs", module_name, rule_name + ".log"),
+        logs_dir / "xpore_config/{sample}.log",
     conda:
-        f"../envs/xpore_config.yaml"
+        str(envs_dir / "xpore_config.yaml")
     script:
-        f"../scripts/xpore_config.py"
+        str(scripts_dir / "xpore_config.py")
 
 
 rule xpore_diffmod:
     input:
         configuration=rules.xpore_config.output.configuration,
     output:
-        table=join("results", module_name, rule_name, "diffmod.table"),
-        log=join("results", module_name, rule_name, "diffmod.log"),
+        table=diffmod_dir / "{sample}/diffmod.table",
+        log=diffmod_dir / "{sample}/diffmod.log",
+    wildcard_constraints:
+        sample=rf"^(?!{CTRL})$",  # dont use control sample in {sample} wildcard
     log:
-        join("logs", module_name, rule_name + ".log"),
-    threads: get_threads(config, rule_name)
+        logs_dir / "xpore_diffmod/{sample}.log",
+    threads: 8
     resources:
-        mem_mb=lambda wildcards, attempt, mem=get_mem(config, rule_name): attempt * mem,
+        mem_mb=lambda wildcards, attempt: attempt * 8 * GB,
     container:
-        xpore_img
+        containers["xpore"]
     shell:
         "xpore diffmod --config {input.configuration} --n_processes {threads} 2> {log}"

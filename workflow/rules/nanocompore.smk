@@ -71,6 +71,8 @@ rule nanocompore_postprocess:
         results / "final/{sample}/nanocompore_results_KS_dwell_context_2.tsv",
         results / "final/{sample}/nanocompore_results_KS_intensity_context_0.tsv",
         results / "final/{sample}/nanocompore_results_KS_intensity_context_2.tsv",
+    wildcard_constraints:
+        sample=rf"^(?!{CTRL})$",  # dont use control sample in {sample} wildcard
     log:
         logs_dir / "nanocompore_postprocess/{sample}.log",
     params:
