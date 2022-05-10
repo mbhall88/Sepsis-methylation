@@ -70,7 +70,7 @@ rule xpore_config:
     output:
         configuration=xpore_dir / "{sample}.config.yaml",
     wildcard_constraints:
-        sample=rf"^(?!{CTRL})$",  # dont use control sample in {sample} wildcard
+        sample="|".join(TESTS),  # dont use control sample in {sample} wildcard
     params:
         readcount_min=15,
         readcount_max=1_000,

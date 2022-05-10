@@ -34,7 +34,7 @@ rule nanocompore_sampcomp:
         shift_tsv=results / "nanocompore/{sample}/outnanocompore_shift_stats.tsv",
         res_db=results / "nanocompore/{sample}/outSampComp.db",
     wildcard_constraints:
-        sample=rf"^(?!{CTRL})$",  # dont use control sample in {sample} wildcard
+        sample="|".join(TESTS),  # dont use control sample in {sample} wildcard
     log:
         logs_dir / "nanocompore_sampcomp/{sample}.log",
     threads: 4
@@ -72,7 +72,7 @@ rule nanocompore_postprocess:
         results / "nanocompore/{sample}/nanocompore_results_KS_intensity_context_0.tsv",
         results / "nanocompore/{sample}/nanocompore_results_KS_intensity_context_2.tsv",
     wildcard_constraints:
-        sample=rf"^(?!{CTRL})$",  # dont use control sample in {sample} wildcard
+        sample="|".join(TESTS),  # dont use control sample in {sample} wildcard
     log:
         logs_dir / "nanocompore_postprocess/{sample}.log",
     params:
