@@ -1,7 +1,3 @@
-def get_fast5_dir(wildcards):
-    return samplesheet.at[wildcards.sample, "fast5dir"]
-
-
 rule basecall:
     input:
         fast5_dir=get_fast5_dir,

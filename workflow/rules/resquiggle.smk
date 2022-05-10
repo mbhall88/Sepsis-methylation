@@ -1,7 +1,7 @@
 
 rule f5c_index:
     input:
-        fast5_dir=fast5_dir / "{sample}/",
+        fast5_dir=get_fast5_dir,
         fastq=rules.merge_fastq.output.fastq,
     output:
         indices=multiext(

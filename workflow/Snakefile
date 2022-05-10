@@ -34,6 +34,7 @@ rule all:
     input:
         targets,
 
+include: str(rules_dir / "common.smk")
 include: str(rules_dir / "reference.smk")
 include: str(rules_dir / "basecalling.smk")
 include: str(rules_dir / "alignment.smk")
