@@ -1,0 +1,6 @@
+name,condition,fast5dir
+NA12878_IVT,control,/data/scratch/projects/punim1068/data/NA12878_IVT_RNA/fast5
+6201_8_0_P1,disease,/data/scratch/projects/punim1068/data/Q1128_dRNA_sepsis/6201_8_0_P1/fast5
+6679_23_0_P1,disease,/data/scratch/projects/punim1068/data/Q1128_dRNA_sepsis/6679_23_0_P1/fast5
+GE031_55_2C,disease,/data/scratch/projects/punim1068/data/Q1128_dRNA_sepsis/GE031_55_2C/fast5
+GE044_56_5D,disease,/data/scratch/projects/punim1068/data/Q1128_dRNA_sepsis/GE044_56_5D/fast5

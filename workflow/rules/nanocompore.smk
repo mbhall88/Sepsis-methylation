@@ -65,12 +65,12 @@ rule nanocompore_postprocess:
         res_tsv=rules.nanocompore_sampcomp.output.res_tsv,
         fasta=rules.index_transcriptome.output.fasta,
     output:
-        results / "final/{sample}/nanocompore_results_GMM_context_0.tsv",
-        results / "final/{sample}/nanocompore_results_GMM_context_2.tsv",
-        results / "final/{sample}/nanocompore_results_KS_dwell_context_0.tsv",
-        results / "final/{sample}/nanocompore_results_KS_dwell_context_2.tsv",
-        results / "final/{sample}/nanocompore_results_KS_intensity_context_0.tsv",
-        results / "final/{sample}/nanocompore_results_KS_intensity_context_2.tsv",
+        results / "nanocompore/{sample}/nanocompore_results_GMM_context_0.tsv",
+        results / "nanocompore/{sample}/nanocompore_results_GMM_context_2.tsv",
+        results / "nanocompore/{sample}/nanocompore_results_KS_dwell_context_0.tsv",
+        results / "nanocompore/{sample}/nanocompore_results_KS_dwell_context_2.tsv",
+        results / "nanocompore/{sample}/nanocompore_results_KS_intensity_context_0.tsv",
+        results / "nanocompore/{sample}/nanocompore_results_KS_intensity_context_2.tsv",
     wildcard_constraints:
         sample=rf"^(?!{CTRL})$",  # dont use control sample in {sample} wildcard
     log:

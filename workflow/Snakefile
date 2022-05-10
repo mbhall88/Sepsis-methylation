@@ -7,10 +7,10 @@ from typing import Dict, Set
 # Workflow config items
 configfile: "config/config.yaml"
 
-
+samplesheet = pd.read_csv(config["samplesheet"], index_col="name")
 GB = 1_024
-CTRL = ""#todo get control sample name from samplesheet
-TESTS = ""#todo get test sample names into list
+CTRL = samplesheet.query("condition=='control'").index[0]
+TESTS = list(samplesheet.query("condition=='disease'").index)
 containers: Dict[str, str] = config["containers"]
 GUPPY_VERSION = containers["guppy"].split(":")[-1]
 workflow_dir = Path("workflow").resolve()
@@ -25,8 +25,18 @@ transcriptome_url = Path(config["transcriptome_ref"]).resolve()
 # =====================================
 targets: Set[Path] = set()
 
+for sample in TESTS:
+    targets.add(results / f"xpore/diffmod/{sample}/diffmod.table")
+    targets.add(results / f"nanocompore/{sample}/nanocompore_results_GMM_context_0.tsv")
 
 
 rule all:
     input:
         targets,
+
+include: str(rules_dir / "reference.smk")
+include: str(rules_dir / "basecalling.smk")
+include: str(rules_dir / "alignment.smk")
+include: str(rules_dir / "resquiggle.smk")
+include: str(rules_dir / "xpore.smk")
+include: str(rules_dir / "nanocompore.smk")
