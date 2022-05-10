@@ -36,7 +36,7 @@ rule xpore_dataprep:
         eventalign=rules.xpore_eventalign.output.tsv,
     output:
         data=multiext(
-            xpore_dir / "{sample}/data",
+            str(xpore_dir / "{sample}/data"),
             ".index",
             ".json",
             ".log",
@@ -90,7 +90,7 @@ rule xpore_diffmod:
         table=diffmod_dir / "{sample}/diffmod.table",
         log=diffmod_dir / "{sample}/diffmod.log",
     wildcard_constraints:
-        sample=rf"^(?!{CTRL})$",  # dont use control sample in {sample} wildcard
+        sample="|".join(TESTS),  # dont use control sample in {sample} wildcard
     log:
         logs_dir / "xpore_diffmod/{sample}.log",
     threads: 8
