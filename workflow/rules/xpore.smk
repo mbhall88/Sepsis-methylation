@@ -36,7 +36,7 @@ rule xpore_dataprep:
         eventalign=rules.xpore_eventalign.output.tsv,
     output:
         data=multiext(
-            str(xpore_dir / "{sample}/data"),
+            str(xpore_dir / "dataprep/{sample}/data"),
             ".index",
             ".json",
             ".log",
