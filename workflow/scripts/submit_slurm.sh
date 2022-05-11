@@ -9,9 +9,9 @@ if [[ ! -d "$LOG_DIR" ]]; then
     exit 1
 fi
 
-MEMORY="4G"
-TIME="1w"
-THREADS=4
+MEMORY="1G"
+TIME="3d"
+THREADS=2
 PROFILE="slurm.punim1068"
 SINGULARITY_ARGS="'--nv'"
 CMD="snakemake --profile $PROFILE --rerun-incomplete --local-cores $THREADS $* --singularity-args $SINGULARITY_ARGS"
