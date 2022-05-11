@@ -7,6 +7,7 @@ from typing import Dict, Set
 # Workflow config items
 configfile: "config/config.yaml"
 
+
 samplesheet = pd.read_csv(config["samplesheet"], index_col="name")
 GB = 1_024
 CTRL = samplesheet.query("condition=='control'").index[0]
@@ -33,6 +34,7 @@ for sample in TESTS:
 rule all:
     input:
         targets,
+
 
 include: str(rules_dir / "common.smk")
 include: str(rules_dir / "reference.smk")

@@ -5,6 +5,8 @@ rule download_transcriptome:
         containers["base"]
     log:
         logs_dir / "download_transcriptome.log",
+    resources:
+        time="30m",
     params:
         url=transcriptome_url,
     shell:

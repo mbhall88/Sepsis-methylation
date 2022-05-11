@@ -15,6 +15,7 @@ rule nanocompore_eventalign_collapse:
         outdir=lambda wildcards, output: Path(output.tsv).parent,
     resources:
         mem_mb=lambda wildcards, attempt: attempt * 4 * GB,
+        time="2d",
     container:
         containers["nanocompore"]
     shell:
@@ -54,6 +55,7 @@ rule nanocompore_sampcomp:
         ),
     resources:
         mem_mb=lambda wildcards, attempt: attempt * 4 * GB,
+        time="45m",
     container:
         containers["nanocompore"]
     script:
@@ -79,6 +81,7 @@ rule nanocompore_postprocess:
         opt={"p_val_lim": 0.01, "quantile_lim": 0.5, "min_distance": 9},
     resources:
         mem_mb=lambda wildcards, attempt: attempt * 4 * GB,
+        time="20m",
     container:
         containers["metacompore_python"]
     script:

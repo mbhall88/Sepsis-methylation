@@ -12,6 +12,7 @@ rule minimap2_index:
         opt="-x map-ont",
     resources:
         mem_mb=lambda wildcards, attempt: attempt * 2 * GB,
+        time="1h",
     conda:
         str(envs_dir / "aln_tools.yaml")
     shell:
@@ -30,6 +31,7 @@ rule minimap2_align:
     threads: 4
     resources:
         mem_mb=lambda wildcards, attempt: attempt * 4 * GB,
+        time="2h",
     params:
         opt="-aL -x map-ont",
     conda:
@@ -53,6 +55,8 @@ rule alignmemt_prefilter:
         bam=temp(prefilter_dir / "{sample}.bam"),
         bam_index=temp(prefilter_dir / "{sample}.bam.bai"),
         reads_index=temp(prefilter_dir / "{sample}.bam.idx.gz"),
+    resources:
+        time="1h",
     log:
         logs_dir / "alignment_prefilter/{sample}.log",
     params:
@@ -85,6 +89,8 @@ rule min_ref_coverage:
         ref_list=aln_dir / "valid_references_list.txt",
     log:
         logs_dir / "min_ref_coverage.log",
+    resources:
+        time="1h",
     params:
         opt=dict(min_cov=30),
     container:
@@ -112,6 +118,7 @@ rule alignmemt_postfilter:
         opt="--index_reads",
     resources:
         mem_mb=lambda wildcards, attempt: attempt * GB,
+        time="1h",
     container:
         containers["pybiotools"]
     shell:

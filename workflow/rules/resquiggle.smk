@@ -14,6 +14,10 @@ rule f5c_index:
     log:
         logs_dir / "f5c_index/{sample}.log",
     threads: 4
+    resources:
+        partition="gpgpu",
+        gres="gpu:1",
+        qos="gpgpuresplat",
     params:
         opt="--iop 4",
     container:
@@ -39,6 +43,9 @@ rule f5c_eventalign:
         opt="-x desktop-high --rna --samples --signal-index --print-read-names --scale-events --verbose 2",
     resources:
         mem_mb=lambda wildcards, attempt: attempt * 8 * GB,
+        partition="gpgpu",
+        gres="gpu:1",
+        qos="gpgpuresplat",
     container:
         containers["f5c"]
     shell:

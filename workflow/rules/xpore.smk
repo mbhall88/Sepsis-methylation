@@ -21,6 +21,9 @@ rule xpore_eventalign:
         opt="-x desktop-high --rna --signal-index --scale-events --verbose 2",
     resources:
         mem_mb=lambda wildcards, attempt: attempt * 8 * GB,
+        partition="gpgpu",
+        gres="gpu:1",
+        qos="gpgpuresplat",
     container:
         containers["f5c"]
     shell:
@@ -51,6 +54,7 @@ rule xpore_dataprep:
         outdir=lambda wildcards, output: Path(output.idx).parent,
     resources:
         mem_mb=lambda wildcards, attempt: attempt * 8 * GB,
+        time="3h",
     container:
         containers["xpore"]
     shell:
@@ -75,6 +79,8 @@ rule xpore_config:
         readcount_min=15,
         readcount_max=1_000,
         outdir=lambda wildcards: diffmod_dir / wildcards.sample,
+    resources:
+        time="5m",
     log:
         logs_dir / "xpore_config/{sample}.log",
     conda:
@@ -96,6 +102,7 @@ rule xpore_diffmod:
     threads: 8
     resources:
         mem_mb=lambda wildcards, attempt: attempt * 8 * GB,
+        time="1h",
     container:
         containers["xpore"]
     shell:

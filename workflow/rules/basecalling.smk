@@ -24,6 +24,10 @@ rule basecall:
         ),
     resources:
         mem_mb=6 * GB,
+        time="12h",
+        partition="gpgpu",
+        gres="gpu:2",  # request 2 GPUs
+        qos="gpgpuresplat",
     container:
         containers["guppy"]
     shell:
@@ -41,5 +45,7 @@ rule merge_fastq:
         opt="--remove_duplicates --min_len 100 --min_qual 7 -v",
     container:
         containers["pybiotools"]
+    resources:
+        time="30m",
     shell:
         "pyBioTools Fastq Filter {params.opt} -i {input.fastq_dir}/pass -o {output.fastq} &> {log}"
