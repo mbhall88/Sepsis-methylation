@@ -12,7 +12,7 @@ fi
 MEMORY="4G"
 TIME="1w"
 THREADS=4
-PROFILE="slurm"
+PROFILE="slurm.punim1068"
 SINGULARITY_ARGS="'--nv'"
 CMD="snakemake --profile $PROFILE --rerun-incomplete --local-cores $THREADS $* --singularity-args $SINGULARITY_ARGS"
 

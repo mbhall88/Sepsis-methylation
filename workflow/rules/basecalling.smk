@@ -27,7 +27,7 @@ rule basecall:
         time="12h",
         partition="gpgpu",
         gres="gpu:2",  # request 2 GPUs
-        qos="gpgpuresplat",
+        qos="gpgpumdhs",
     container:
         containers["guppy"]
     shell:

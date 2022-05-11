@@ -23,7 +23,7 @@ rule xpore_eventalign:
         mem_mb=lambda wildcards, attempt: attempt * 8 * GB,
         partition="gpgpu",
         gres="gpu:1",
-        qos="gpgpuresplat",
+        qos="gpgpumdhs",
     container:
         containers["f5c"]
     shell:
