@@ -22,7 +22,7 @@ logs_dir = Path("logs/rules").resolve()
 data_dir = Path("data").resolve()
 results = Path("results").resolve()
 fast5_dir = Path(config["fast5_dir"]).resolve()
-transcriptome_url = Path(config["transcriptome_url"]).resolve()
+transcriptome_url = config["transcriptome_url"]
 # =====================================
 targets: Set[Path] = set()
 
