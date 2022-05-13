@@ -26,8 +26,7 @@ rule basecall:
         mem_mb=6 * GB,
         time="12h",
         partition="gpgpu",
-        gres="gpu:2",  # request 2 GPUs
-        qos="gpgpumdhs",
+        slurm_opts=dict(gres="gpu:2",  qos="gpgpumdhs"),
     container:
         containers["guppy"]
     shell:

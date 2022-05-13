@@ -16,8 +16,7 @@ rule f5c_index:
     threads: 4
     resources:
         partition="gpgpu",
-        gres="gpu:1",
-        qos="gpgpumdhs",
+        slurm_opts=dict(gres="gpu:1", qos="gpgpumdhs"),
     params:
         opt="--iop 4",
     container:
@@ -44,8 +43,7 @@ rule f5c_eventalign:
     resources:
         mem_mb=lambda wildcards, attempt: attempt * 8 * GB,
         partition="gpgpu",
-        gres="gpu:1",
-        qos="gpgpumdhs",
+        slurm_opts=dict(gres="gpu:1",qos="gpgpumdhs"),
     container:
         containers["f5c"]
     shell:
