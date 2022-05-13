@@ -13,7 +13,7 @@ MEMORY="1G"
 TIME="3d"
 THREADS=2
 PROFILE="slurm.punim1068"
-SINGULARITY_ARGS="'--nv'"
+SINGULARITY_ARGS="\'--nv\'"
 CMD="snakemake --profile $PROFILE --rerun-incomplete --local-cores $THREADS $* --singularity-args $SINGULARITY_ARGS"
 
 ssubmit -t "$TIME" -m "$MEMORY" -o "$LOG_DIR"/"$JOB_NAME".o \
