@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eux
 
-JOB_NAME="snakemake_master_process."$(date --iso-8601='minutes')
+JOB_NAME="snakemake_master_process."$(date "+%s")
 LOG_DIR="logs"
 
 if [[ ! -d "$LOG_DIR" ]]; then
