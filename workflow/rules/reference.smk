@@ -22,7 +22,7 @@ rule index_transcriptome:
     log:
         logs_dir / "index_transcriptome.log",
     resources:
-        mem_mb=lambda wildcards, attempt: attempt * 2 * GB,
+        mem_mb=lambda wildcards, attempt: attempt * 4 * GB,
     container:
         containers["metacompore_python"]
     script:
