@@ -22,7 +22,7 @@ rule xpore_eventalign:
     resources:
         mem_mb=lambda wildcards, attempt: attempt * 8 * GB,
         partition="gpgpu",
-        slurm="gres='gpu:1' qos=gpgpumdhs",
+        slurm="gres=gpu:1 qos=gpgpumdhs",
     container:
         containers["f5c"]
     shell:
