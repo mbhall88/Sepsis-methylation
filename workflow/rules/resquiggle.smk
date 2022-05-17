@@ -15,6 +15,7 @@ rule f5c_index:
         logs_dir / "f5c_index/{sample}.log",
     threads: 4
     resources:
+        mem_mb=lambda wildcards, attempt: attempt * 4 * GB,
         partition="gpgpu",
         slurm="gres=gpu:1 qos=gpgpumdhs",
     params:

@@ -11,12 +11,12 @@ rule minimap2_index:
     params:
         opt="-x map-ont",
     resources:
-        mem_mb=lambda wildcards, attempt: attempt * 2 * GB,
+        mem_mb=lambda wildcards, attempt: attempt * 8 * GB,
         time="1h",
     conda:
         str(envs_dir / "aln_tools.yaml")
     shell:
-        "minimap2 -t {threads} {params.opt} -d {output.idx} {input.fasta} 2> {log}"
+        "minimap2 {params.opt} -d {output.idx} {input.fasta} 2> {log}"
 
 
 rule minimap2_align:
