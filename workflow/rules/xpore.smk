@@ -53,7 +53,7 @@ rule xpore_dataprep:
         outdir=lambda wildcards, output: Path(output.idx).parent,
     resources:
         mem_mb=lambda wildcards, attempt: attempt * 8 * GB,
-        time="3h",
+        time="1d",
     container:
         containers["xpore"]
     shell:
