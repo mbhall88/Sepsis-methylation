@@ -53,13 +53,18 @@ rule nanocompore_sampcomp:
                 "--logit",
             ]
         ),
+        outdir=lambda wildcards, output: Path(output.res_tsv).parent,
     resources:
         mem_mb=lambda wildcards, attempt: attempt * 4 * GB,
         time="45m",
     container:
         containers["nanocompore"]
-    script:
-        str(scripts_dir / "nanocompore_sampcomp.py")
+    shell:
+        """
+        nanocompore sampcomp -t {threads} {params.opt} -w -1 {input.control_tsv} \
+            -2 {input.test_tsv} --label1 control --label2 test -f {input.fasta} \
+            -o {params.outdir} &> {log}
+        """
 
 
 rule nanocompore_postprocess:
