@@ -33,18 +33,21 @@ rule xpore_eventalign:
         """
 
 
+dataprep_dir = xpore_dir / "dataprep"
+
+
 rule xpore_dataprep:
     input:
         eventalign=rules.xpore_eventalign.output.tsv,
     output:
         data=multiext(
-            str(xpore_dir / "dataprep/{sample}/data"),
+            str(dataprep_dir / "{sample}/data"),
             ".index",
             ".json",
             ".log",
             ".readcount",
         ),
-        idx=xpore_dir / "{sample}/eventalign.index",
+        idx=dataprep_dir / "{sample}/eventalign.index",
     log:
         logs_dir / "xpore_dataprep/{sample}.log",
     threads: 8
@@ -68,8 +71,8 @@ diffmod_dir = xpore_dir / "diffmod"
 
 rule xpore_config:
     input:
-        control_json=xpore_dir / f"dataprep/{CTRL}/data.json",
-        test_json=xpore_dir / "dataprep/{sample}/data.json",
+        control_json=dataprep_dir / f"{CTRL}/data.json",
+        test_json=dataprep_dir / "{sample}/data.json",
     output:
         configuration=xpore_dir / "{sample}.config.yaml",
     wildcard_constraints:
