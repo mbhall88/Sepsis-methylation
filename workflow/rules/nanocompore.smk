@@ -56,7 +56,7 @@ rule nanocompore_sampcomp:
         outdir=lambda wildcards, output: Path(output.res_tsv).parent,
     resources:
         mem_mb=lambda wildcards, attempt: attempt * 4 * GB,
-        time="45m",
+        time="4h",
     container:
         containers["nanocompore"]
     shell:
